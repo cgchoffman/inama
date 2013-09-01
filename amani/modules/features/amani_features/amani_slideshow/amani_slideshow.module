@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Slideshow feature.
+ */
+
+include_once 'amani_slideshow.features.inc';

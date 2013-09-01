@@ -1,0 +1,643 @@
+// _nodes.sass 
+
+.page-node
+  .node
+    > .content
+      background: #fff
+      padding: $padding
+      box-shadow: 2px 3px 4px #C8C8C8
+      font-family: "Georgia"
+      line-height: 1.4
+      .field-label
+        color: $orange
+        font-family: "bariol_regularregular"
+        font-weight: normal
+        text-transform: uppercase
+        font-size: 16px
+        margin-bottom: 5px
+        margin-top: $margin
+      .field-name-field-incident-geolocation
+        .openlayers-map,
+        .openlayers-container
+          width: 100% !important
+
+.page-news-and-events
+  #block-system-main
+    background: #fff
+    background: #fff
+    padding: $padding
+    box-shadow: 2px 3px 4px #C8C8C8
+    font-family: "Georgia"
+    line-height: 1.4
+    .views-row
+      border-bottom: 1px solid $grey
+      padding-bottom: $padding
+      margin-bottom: $margin
+      &.views-row-last
+        border-bottom: 0
+        margin-bottom: 0
+        padding-bottom: 0
+      .views-field-title
+        font-family: "bariol_regularregular"
+        text-transform: uppercase
+        font-size: 16px
+  #block-views-news_and_events-block
+    .views-row
+      @include span-columns(3)
+      @include omega(4n)
+      background: #fff
+      box-shadow: 2px 3px 4px #C8C8C8
+      padding: $padding
+      .views-field-title
+        font-family: "bariol_regularregular"
+        font-weight: normal
+        font-size: 16px
+        text-transform: uppercase
+        margin-bottom: 5px
+      .views-field-field-media
+        @include fill-parent
+  #block-views-calendar_of_events-calendar
+    @include media($mobile) 
+      .pager
+        padding: 0px
+      .date-nav 
+        padding-bottom: 0px !important
+      .views-row 
+        width: 47.804% !important
+        margin-bottom: 10px !important     
+
+// Incident reports
+.page-incident-reports
+  .block-incident-map
+    label span
+      font-weight: normal
+
+// Team page.
+.page-team
+  .view-id-team.view-display-id-page
+    .views-exposed-form
+      @include omega
+      position: absolute
+      top: -70px
+      right: -30px
+      @include media($mobile)
+        top: -115px
+      @include media($motab)
+        top: -90px
+        #edit-keys-wrapper
+          display: none
+      .views-exposed-widget
+        margin: 0
+        padding: 0
+        padding-left: $padding
+      input
+        border: 0
+        background: #fff
+        padding: 10px
+        box-shadow: 2px 3px 4px #C8C8C8
+        font-size: 16px
+        width: 200px
+      #edit-keys
+        background: #fff url("../images/icons/search_icon.png") no-repeat 5% -22px
+        padding-left: 35px
+      select
+        border: 0
+        background: #fff url('../images/icons/orange_arrow.png') no-repeat 85% 50%
+        margin-right: -80px
+        width: 210px
+        @include media($motab)
+          background-position: 67% 50%
+      .form-type-select
+        background: #fff url('../images/icons/orange_arrow.png') no-repeat 95% 50%
+        border: 0
+        background: #fff
+        padding: 10px
+        box-shadow: 2px 3px 4px #C8C8C8
+        font-size: 16px
+        width: 200px
+        overflow: hidden
+        @include media($motab)
+          width: 170px
+      label
+        display: none
+      #edit-keys-wrapper
+        position: relative
+        label
+          display: block
+          font-weight: normal
+          font-size: 16px
+          position: absolute
+          top: 10px
+          left: 65px
+    .view-content
+      clear: both
+      h3
+        font-style: oblique
+        font-weight: normal
+        font-size: 20px
+        margin-top: 10px
+    .views-row
+      @include fill-parent()
+      @include omega(1n)
+      background: #fff
+      padding: $padding
+      box-shadow: 2px 3px 4px #C8C8C8
+      margin-bottom: $margin
+      overflow: hidden
+      .views-field-title
+        font-family: "bariol_regularregular"
+        text-transform: uppercase
+        margin-bottom: 5px
+      .views-field-field-team-bio
+        font-family: "Georgia"
+      //.views-field-title
+      .views-field-view-node
+        text-align: right
+        margin-top: 10px
+      .views-field-field-team-image
+        margin: 0
+        @include span-columns(3)
+        img
+          width: 100%
+          height: auto
+
+// About page
+.page-about
+  .region-home-content-top-rotator
+    background: none
+    @include span-columns(9)
+    @include media($motab)
+      @include fill-parent
+    #block-views-about_page-block_1
+      .views-row
+        border: 0
+        margin: 0
+        padding: 0
+        .views-field-title
+          font-size: 50px
+          text-transform: none
+          padding: 10px 0
+          line-height: 1.24
+        .views-field-title,
+        .views-field-body,
+        .views-field-field-image
+          @include fill-parent
+  .view-about-page
+    &.view-display-id-page
+      > .view-content
+        background: #fff
+        padding: $padding
+        box-shadow: 2px 3px 4px #C8C8C8
+    .views-row
+      @include fill-parent
+      @include omega
+      padding: $padding 0
+      margin: $margin 0
+      border-bottom: 1px solid $grey
+      overflow: hidden
+      &:first-child
+        padding-top: 0
+      .views-field-field-image
+        @include span-columns(2)
+        @include media($motab)
+          @include fill-parent
+        img
+          width: 100%
+          height: auto
+      .views-field-title
+        @include span-columns(10)
+        @include omega()
+        text-transform: uppercase
+        font-size: 16px
+        @include media($motab)
+          @include fill-parent
+      .views-field-body
+        @include span-columns(10)
+        @include omega()
+        font-family: "Georgia"
+        @include media($motab)
+          @include fill-parent
+
+// Get involved page.
+.page-get-involved
+  .view-get-involved.view-display-id-page
+    margin-top: $margin
+    border-top: 1px solid $grey
+    padding-top: $padding
+    .views-row
+      border-bottom: 1px solid $grey
+      margin-bottom: $margin
+      padding-bottom: $padding
+      overflow: hidden
+    .views-field-field-image
+      @include span-columns(2)
+      @include media($motab)
+        @include fill-parent
+        margin-bottom: $margin
+        img
+          width: 100%
+          height: auto
+    .views-field-title
+      @include span-columns(10)
+      @include omega
+      font-family: "bariol_regularregular"
+      color: $orange
+      font-size: 16px
+      text-transform: uppercase
+      margin-bottom: 5px
+      @include media($motab)
+        @include fill-parent
+    .views-field-body
+      @include span-columns(10)
+      @include omega
+      font-family: "Georgia"
+      @include media($motab)
+        @include fill-parent
+
+// Resources page
+.page-resources
+  .view-resources
+    .views-field-field-image
+      @include media($motab)
+        img
+          width: 40px
+          height: auto
+    .views-field-field-document
+      overflow: hidden
+    .views-field-field-date
+      @include media($motab)
+        display: none
+    .views-exposed-form
+      margin-bottom: $margin
+      .views-exposed-widget
+        float: none
+        padding: 10px 0
+        line-height: 1em
+      .col
+        @include span-columns(5 of 12)
+        @include media($mobile)
+          float: none
+          width: 100%
+      #col3
+        @include span-columns(2 of 12)
+        @include media($mobile)
+          float: none
+          width: 100%
+      label
+        color: $orange
+        font-weight: normal
+        display: inline-block
+        font-style: italic
+        width: 25%
+        vertical-align: top
+      .views-widget
+        display: inline-block
+        width: 70%
+      .form-text
+        border: 0
+        background: #fff
+        padding: 10px
+        box-shadow: 2px 3px 4px #C8C8C8
+        display: inline-block
+        height: 45px
+        width: 100%
+        font-size: 16px
+      select
+        border: 0
+        background: #fff url('../images/icons/orange_arrow.png') no-repeat 75% 50%
+        width: 130%
+      .form-type-select
+        border: 0
+        background: #fff
+        padding: 10px
+        box-shadow: 2px 3px 4px #C8C8C8
+        font-size: 16px
+        width: 100%
+        height: 45px
+        overflow: hidden
+      .views-widget-filter-field_date_value
+        #edit-field-date-value-min-wrapper,
+        #edit-field-date-value-max-wrapper
+          float: left
+          width: 48%
+          margin-right: 4%
+          .form-item
+            position: relative
+            margin: 0
+            .date-padding
+              float: none
+            input
+              width: 100%
+              margin: 0
+            label
+              position: absolute
+              top: 45px
+              width: 100%
+            .description
+              position: relative
+              top: 10px
+        #edit-field-date-value-max-wrapper
+          margin-right: 0
+      .views-submit-button,
+      .views-reset-button
+        .form-submit
+          background: $orange
+          border: 0
+          color: #fff
+          width: 100%
+          height: 45px
+          margin-top: 0
+        @include media($mobile)
+          float: left
+          width: 46%
+          margin-right: 2%
+          margin-left: 2%
+    //links
+    .attachment-before
+      @include span-columns(4)
+      float: right
+      margin: 0
+      // mobile
+      @include media($tablet)
+        @include span-columns(2)
+        @include shift(0)
+        @include omega()
+        float: right
+      // 100% width for mobile devices.
+      @include media($mobile)
+        @include span-columns(4)
+        @include shift(0)
+        @include omega()
+      .view-header
+        background: url('../images/icons/resources_links.png') no-repeat top left
+        min-height: 60px
+        padding-bottom: $padding/3
+        border-bottom: 2px solid $grey_dark
+        margin-bottom: $margin/3
+        h2
+          margin: 0 0 0 70px
+        p
+          color: $orange
+          margin: 0 0 0 70px
+      .views-row
+        padding-bottom: $padding/3
+        margin-bottom: $margin/3
+        border-bottom: 1px dotted $grey
+        p
+          margin: 0
+    //videos
+    .attachment-after
+      padding-top: $padding
+      clear: both
+      .views-row
+        @include span-columns(3)
+        @include omega(4n)
+        background: #fff
+        min-height: 350px
+        margin-bottom: $margin/2
+        @include media($tablet)
+          @include span-columns(4)
+          @include omega(2n)
+        @include media($mobile)
+          @include fill-parent()
+        .views-field-field-video
+          position: relative
+          a
+            display: block
+            position: absolute
+            z-index: 50
+            text-indent: -99999px
+            width: 100%
+            height: 100%
+          img
+            width: 100%
+            height: auto
+        .views-field-title, .views-field-body
+          padding: 5px 10px 0
+    //documents
+    .view-content-wrapper
+      @include fill-parent
+      background: #fff
+      padding: $padding
+      box-shadow: 2px 3px 4px #C8C8C8
+      // document mobile
+      @include media($tablet)
+        @include fill-parent
+      // 100% width for mobile devices.
+      @include media($mobile)
+        @include fill-parent
+      tbody
+        border-top: none
+      tr.even, tr.odd
+        background: none
+        border-bottom: 1px solid $grey
+      tr.views-row-last
+        border-bottom: none
+      td
+        vertical-align: top
+        &.views-field-nid
+          width: 100px
+          @include media($motab)
+            width: 60px
+          img
+            width: 100%
+            height: auto
+      h3
+        color: $orange
+      .views-field-field-date
+        text-align: center
+        a
+          display: block
+          width: 96px
+          height: 96px
+          text-indent: -9999px
+          &.link
+            background: url('../images/icons/fileicon_web.png') no-repeat
+        &.text-plain a
+          background: url('../images/icons/fileicon_txt.png') no-repeat
+        &.application-pdf a
+          background: url('../images/icons/fileicon_pdf.png') no-repeat
+
+// Get invlolved node
+.node-type-get-involved
+  .field-name-field-graphic
+    @include media($motab)
+      margin-bottom: $margin
+      img
+        width: 100%
+        height: auto
+
+// Node projects
+body.node-type-project
+  .node-project
+    .field-name-field-media
+      float: left
+      margin-right: 20px
+      margin-bottom: 20px
+
+// Contact page
+.page-contact
+  .form-item
+    label
+      font-weight: normal
+      color: $orange
+      margin-bottom: 5px
+  .form-text,
+  .form-textarea
+    background: #fff
+    box-shadow: 2px 3px 4px #C8C8C8
+    border: 0
+    padding: $padding/3
+    @include media($motab)
+      @include fill-parent
+  .form-type-textarea
+    .grippie
+      display: none !important
+  #edit-actions
+    text-align: right
+    .form-submit
+      color: $orange
+      background: #fff
+      box-shadow: 2px 3px 4px #C8C8C8
+      padding: $padding/3 $padding
+      border: 0
+
+// Galleries page
+.page-gallery
+  .taxonomy-term
+    h2
+      display: none
+.mg-col
+  .mg-gallery.mg-teaser
+    clear: none
+
+
+// Content Admin page
+.page-amani-content-admin
+  .view-content-admin
+    .views-exposed-form
+      #edit-title-wrapper,
+      #edit-uid-wrapper
+        @include span-columns(7 of 12)
+        padding: 10px 0
+        line-height: 1em
+        @include media($mobile)
+          float: none
+          clear: both
+          width: 100%
+      #edit-type-wrapper,
+      #edit-status-wrapper
+        @include span-columns(5 of 12)
+        padding: 10px 0
+        line-height: 1em
+        margin-right: 0
+        @include media($mobile)
+          float: none
+          clear: both
+          width: 100%
+      label
+        color: $orange
+        font-weight: normal
+        display: inline-block
+        font-style: italic
+        @include span-columns(1 of 4)
+        vertical-align: top
+      .views-widget
+        display: inline-block
+        @include span-columns(3 of 4)
+      .form-text
+        border: 0
+        background: #fff
+        padding: 10px
+        box-shadow: 2px 3px 4px #C8C8C8
+        display: inline-block
+        height: 45px
+        width: 100%
+        font-size: 16px
+      select
+        border: 0
+        background: #fff url('../images/icons/orange_arrow.png') no-repeat 75% 50%
+        width: 130%
+      .form-type-select
+        border: 0
+        background: #fff
+        padding: 10px
+        box-shadow: 2px 3px 4px #C8C8C8
+        font-size: 16px
+        width: 100%
+        height: 45px
+        overflow: hidden
+      .views-widget-sort-by,
+      .views-widget-sort-order,
+      .views-submit-button
+        @include span-columns(4 of 12)
+        padding: 0
+        position: relative
+        margin-top: $margin/2
+        @include media($mobile)
+          @include span-columns(6 of 12)
+          margin-top: $margin
+        label
+          position: absolute
+          top: -24px
+          left:  0
+          font-size: 13px
+          width: 100%
+        .form-submit
+          background: $orange
+          border: 0
+          color: #fff
+          width: 100%
+          height: 45px
+          margin-top: 0
+      .views-widget-sort-by
+        clear: both
+      .views-widget-sort-order
+        @include media($mobile)
+          margin-right: 0
+      .views-submit-button
+        @include media($mobile)
+          clear: both
+          width: 100%
+          margin-top: $margin/2
+    .view-content
+      margin-top: $margin/2
+  // Manage content block
+  #block-amani_global-add_content_links
+    ul
+      margin-left: $margin
+      li
+        margin-left: 0
+    span.node-type-list
+      border-bottom: 2px solid $orange
+      color: $grey_dark
+      font-family: "bariol_regularregular"
+      font-size: 20px
+      margin-bottom: $margin/2
+      padding-bottom: $padding/4
+      text-align: left
+      display: block
+      margin-top: $margin
+
+// Blog page
+.page-blog
+  #block-system-main
+    background: #fff
+    background: #fff
+    padding: $padding
+    box-shadow: 2px 3px 4px #C8C8C8
+    font-family: "Georgia"
+    line-height: 1.4
+    .view-news-and-events-blog
+      .views-row
+        border-bottom: 1px solid $grey
+        padding-bottom: $padding
+        margin-bottom: $margin
+        &.views-row-last
+          border-bottom: 0
+          margin-bottom: 0
+          padding-bottom: 0
+        .views-field-title
+          font-family: "bariol_regularregular"
+          text-transform: uppercase
+          font-size: 16px

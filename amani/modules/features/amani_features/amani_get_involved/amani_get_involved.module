@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Get involved feature.
+ */
+
+include_once 'amani_get_involved.features.inc';

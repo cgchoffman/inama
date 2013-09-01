@@ -1,0 +1,3 @@
+<?php
+
+include_once('amani_comment.features.inc');

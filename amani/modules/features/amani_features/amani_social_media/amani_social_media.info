@@ -1,0 +1,16 @@
+name = Amani: Social media
+description = Socmed integration
+core = 7.x
+package = Amani
+php = 5.2.4
+version = 7.x-1.0
+project = amani_social_media
+dependencies[] = ctools
+dependencies[] = fb_likebox
+dependencies[] = quicktabs
+dependencies[] = twitter
+dependencies[] = views
+features[ctools][] = quicktabs:quicktabs:1
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:1
+features[quicktabs][] = social_media_feeds

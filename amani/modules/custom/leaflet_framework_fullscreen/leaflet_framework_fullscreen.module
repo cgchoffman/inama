@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * Implements hook_libraries_info().
+ */
+function leaflet_framework_fullscreen_libraries_info() {
+  return array(
+    'leaflet.fullscreen' => array(
+      'name' => 'leaflet.fullscreen',
+      'vendor url' => 'http://brunob.github.io/leaflet.fullscreen/',
+      'download url' => 'https://github.com/brunob/leaflet.fullscreen/tarball/master',
+      'version' => '0.0.1',
+      'files' => array(
+        'js' => array(
+          'Control.FullScreen.js' => array(),
+        ),
+        'css' => array(
+          'Control.FullScreen.css' => array(),
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_library().
+ */
+function leaflet_framework_fullscreen_library() {
+  $libraries = array();
+
+  $fullscreen = libraries_detect('leaflet.fullscreen');
+  if ($fullscreen) {
+    $libraries['leaflet.fullscreen'] = leaflet_framework_convert_libraries($fullscreen);
+  }
+
+  $path = drupal_get_path('module', 'leaflet_framework_fullscreen');
+  $libraries['FullScreenPlugin'] = array(
+    'title' => 'Leaflet.fullscreen Plugin',
+    'version' => '7.x-1.x',
+    'js' => array(
+      "$path/js/FullScreenPlugin.js" => array(),
+    ),
+    'dependencies' => array(
+      array('leaflet_framework', 'LeafletFramework'),
+      array('leaflet_framework_fullscreen', 'leaflet.fullscreen'),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_leaflet_framework_plugins().
+ */
+function leaflet_framework_fullscreen_leaflet_framework_plugins() {
+  $plugins = array();
+
+  $plugins['fullscreen'] = array(
+    'library' => array('leaflet_framework_fullscreen', 'FullScreenPlugin'),
+    'logical' => 'LF.FullScreen',
+  );
+
+  return $plugins;
+}

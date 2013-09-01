@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Programs/Campaigns feature.
+ */
+
+include_once 'amani_programs_campaigns.features.inc';

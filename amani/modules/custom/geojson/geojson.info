@@ -1,0 +1,3 @@
+name = GeoJSON
+description = Generate GeoJSON resources.
+core = 7.x

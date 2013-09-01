@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Team feature.
+ */
+
+include_once 'amani_team.features.inc';

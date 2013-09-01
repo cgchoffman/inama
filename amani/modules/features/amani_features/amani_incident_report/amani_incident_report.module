@@ -1,0 +1,39 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Incident report feature.
+ */
+
+include_once 'amani_incident_report.features.inc';
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function amani_incident_report_field_formatter_info() {
+  return array(
+    'amani_address_city' => array(
+      'label' => t('Address: display city only'),
+      'description' => t('Addressfield: Display city only'),
+      'field types' => array('addressfield'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function amani_incident_report_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+    case 'amani_address_city':
+      foreach ($items as $delta => $item) {
+        $element[$delta]['locality'] = array(
+          '#markup' => $item['locality'],
+        );
+      }
+      break;
+  }
+
+  return $element;
+}

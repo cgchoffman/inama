@@ -1,0 +1,5 @@
+name = Incident map
+description = Mapping incident reports.
+core = 7.x
+dependencies[] = geojson
+dependencies[] = leaflet_framework

@@ -1,0 +1,205 @@
+// _forms.sass
+
+// Incident report form
+.node-incident_report-form
+  .form-item
+    clear: both
+    //margin: $margin 0
+    overflow: hidden
+    padding: $padding/3 0
+    label
+      @include span-columns(3)
+      text-align: right
+      padding: 5px 0
+      @include media($tablet)
+        @include fill-parent
+        text-align: left
+    input
+      border: 0
+      background: #fff
+      box-shadow: 2px 2px 2px #ccc
+      font-size: 15px
+      padding: 5px
+      @include span-columns(7)
+      @include media($tablet)
+        @include fill-parent
+    .form-textarea-wrapper
+      @include span-columns(7)
+      @include media($tablet)
+        @include fill-parent
+      textarea
+        background: #fff
+        font-size: 15px
+        padding: 5px
+        border: 0
+        box-shadow: 2px 2px 2px #ccc
+      .grippie
+        display: none
+  .field-widget-name-widget
+    .form-item
+      margin: 0
+      padding: 5px 0
+      input
+        @include span-columns(11)
+      .description
+        clear: both
+        padding: 5px 0
+  .field-name-field-description
+  .field-type-name
+    .name-given-wrapper,
+    .name-middle-wrapper,
+    .name-family-wrapper
+      width: 140px
+      @include media($tablet)
+        clear: both
+        width: 100%
+  .field-type-taxonomy-term-reference
+    select
+      width: 150px
+  .field-name-field-incident-address
+    //border-top: 1px solid #999
+    //padding-top: $padding/3
+    margin-top: $margin
+    @include span-columns(6)
+    @include media($tablet)
+      @include fill-parent
+    fieldset
+      border: 0
+      padding: 0
+      margin: 0
+      legend
+        font-weight: bold
+      .addressfield-container-inline
+        .form-item
+          float: none
+          margin: 0
+          padding: 4px 0
+  .field-name-field-incident-geolocation
+    margin-top: $margin
+    @include span-columns(6)
+    @include omega
+    @include media($tablet)
+      @include fill-parent
+    overflow: hidden
+    margin-bottom: $margin
+  .field-name-field-incident-date
+    clear: both
+    fieldset
+      border: 0
+      .fieldset-wrapper
+        //@include span-columns(9)
+        //@include shift(3)
+        .form-item
+          width: 100%
+          label
+            text-align: left
+            @include fill-parent
+        .date-padding
+          width: 100%
+          float: none
+          overflow: hidden
+          padding: 0
+          .form-item
+            @include span-columns(4)
+            clear: none
+            input
+              @include span-columns(11)
+      legend
+        font-weight: bold
+  .field-type-file
+    table
+      background: none
+      th
+        border: 0
+      tr
+        background: none
+    .tabledrag-toggle-weight-wrapper
+      display: none
+    .form-submit
+      background: $orange
+      color: #fff
+      padding: 5px 10px
+      width: auto
+      border: 0
+    fieldset
+      border: 0
+      margin: 0
+      padding: 0
+  #edit-field-incident-date
+    .form-wrapper
+      legend
+        @include span-columns(3)
+        text-align: right
+        margin-top: 24px
+        @include media($mobile)
+          @include fill-parent
+          text-align: left
+      .fieldset-wrapper
+        @include span-columns(8)
+        @include omega
+        @include media($mobile)
+          @include fill-parent
+          .edit-field-incident-date-und-0-value
+            @include fill-parent
+          .form-item .form-item
+            @include span-columns(2 of 4)
+            @include omega(2n)
+  #edit-field-incident-media,
+  #edit-field-incident-videos,
+  #edit-field-links
+    @include span-columns(6)
+    tbody,
+    th
+      border: 0
+      tr.odd,
+      tr.even
+        border: 0
+    @include media($tablet)
+      @include fill-parent
+    .field-multiple-drag
+      display: none
+    label
+      text-align: left
+      font-weight: bold
+      font-size: 16px
+      margin: 10px 0
+  #edit-field-incident-videos
+    @include omega
+  #edit-field-documents
+    clear: both
+    padding: $margin 0
+    legend
+      font-weight: bold
+      font-size: 16px
+    .description
+      @include shift(3)
+  #edit-field-links
+    label
+      text-align: left
+      font-weight: bold
+      font-size: 16px
+    .tabledrag-toggle-weight-wrapper
+      display: none
+    table
+      tr
+        background: none
+        td.field-multiple-drag
+          display: none
+    .description
+      clear: both
+      @include shift(3)
+      padding-top: 10px
+    .form-submit
+      background: $orange
+      color: #fff
+      padding: 5px 10px
+      width: auto
+      border: 0
+  .form-actions
+    input
+      font-size: 16px
+      padding: 10px 20px
+      background: $orange
+      border: 0
+      color: #fff
+      margin-right: $margin/3

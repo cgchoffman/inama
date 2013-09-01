@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Testimonial feature.
+ */
+
+include_once 'amani_testimonial.features.inc';

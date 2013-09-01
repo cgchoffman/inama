@@ -1,0 +1,4 @@
+name = Amani Custom
+core = 7.x
+description = Wrapper functionality for Amani project.
+package = Amani

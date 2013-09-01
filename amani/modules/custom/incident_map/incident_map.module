@@ -1,0 +1,817 @@
+<?php
+
+require_once('incident_map.admin.inc');
+
+/**
+ * Implements hook_menu().
+ */
+function incident_map_menu() {
+  $items = array();
+  $items['incident-reports'] = array(
+    'title' => t('Incident reports'),
+    'description' => '',
+    'page callback' => 'incident_map_reports',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/config/incident-reports'] = array(
+    'title' => t('Administer the Incident reports map'),
+    'description' => '',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('incident_map_settings'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'incident_map.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function incident_map_theme($existing, $type, $theme, $path) {
+  return array(
+    'category_filter' => array('variables' => array('id' => NULL, 'title' => NULL)),
+    'timeline_filter' => array('variables' => array('id' => NULL, 'title' => NULL)),
+  );
+}
+
+/**
+ * Get all declared filters.
+ */
+function incident_map_filters() {
+  $filters = module_invoke_all('incident_map_filters');
+  return $filters;
+}
+
+/**
+ * Get all declared filters grouped by type.
+ */
+function incident_map_filters_by_field_type() {
+  $filters = array();
+
+  foreach (incident_map_filters() as $type => $definition) {
+    $field_type = $definition['field_type'];
+    if (!isset($filters[$field_type])) {
+      $filters[$field_type] = array();
+    }
+    $filters[$field_type][$type] = $definition;
+  }
+
+  return $filters;
+}
+
+/**
+ * Implementation of hook_incident_map_filters().
+ */
+function incident_map_incident_map_filters() {
+  $filters = array();
+
+  $filters['category'] = array(
+    'name' => 'Category filter',
+    'field_type' => 'taxonomy_term_reference',
+    'callback' => 'incident_map_category_filter',
+    'value_callback' => function ($wrapper) { return $wrapper->label(); },
+    'options' => array(
+      'title' => incident_map_setting_input_textfield(t('Filter title'), NULL, t('Include a title to be displayed above this filter.')),
+      'type' => incident_map_setting_input_select(t('Filter type'), array('checkbox' => t('Checkbox'), 'radio' => t('Radio buttons')), 'checkbox', t('Select the type of input element you want to use for filtering.')),
+      'empty' => incident_map_setting_input_textfield(t('Uncategorized value.'), t('None'), t("Provide a value to use for items that haven't been categorized.")),
+    ),
+  );
+
+  $filters['timeline'] = array(
+    'name' => 'Timeline filter',
+    'field_type' => 'datetime',
+    'callback' => 'incident_map_timeline_filter',
+    'value_callback' => function ($wrapper) { return date_format(new DateObject($wrapper->value()), DATE_FORMAT_ISO); },
+    'options' => array(),
+  );
+
+  return $filters;
+}
+
+/**
+ * Imlementation of hook_block_info().
+ */
+function incident_map_block_info() {
+  $blocks = array();
+
+  $filters = incident_map_filters_by_field_type();
+  $fields = incident_map_get_field_info('node', 'incident_report', array_keys($filters));
+  $prefix = 'incident-map-filter';
+  foreach ($fields as $field_name => $field_info) {
+    if (variable_get("$prefix-enabled-$field_name", FALSE)) {
+      $blocks[$field_name] = array('info' => "Incident map filter: {$field_info['label']}");
+    }
+  }
+
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view().
+ */
+function incident_map_block_view($delta = '') {
+  $map_id = 'incident-map-default';
+  $prefix = 'incident-map-filter';
+
+  $block = array();
+  $filter_type = variable_get("$prefix-$delta", NULL);
+  $filters = incident_map_filters();
+
+  if (!is_null($filter_type) && isset($filters[$filter_type])) {
+    $filter = $filters[$filter_type];
+    $args = array($map_id, $delta);
+    foreach ($filter['options'] as $option => $element) {
+      $id = "$prefix-$delta-$filter_type-$option";
+      $args[] = variable_get($id, $element['#default_value']);
+    }
+    $block['content'] = call_user_func_array($filter['callback'], $args);
+  }
+
+  return $block;
+}
+
+/**
+ * Implementation of hook_block_view_alter()
+ */
+function incident_map_block_view_alter(&$data, $block) {
+  $block_title = '';
+  $map_title = variable_get('incident-map-map-record-title',null);
+  if ($block->module === 'views' && $block->delta === 'incident_reports-latest') {
+    if(!empty($map_title)){
+      $block_title = 'Latest '.variable_get('incident-map-map-record-title',NULL);
+    }
+    else {
+      $block_title = 'Latest Incident Reports';
+    }
+    $data['subject'] = $block_title;
+  }
+}
+
+
+/**
+ * Returns a list of field instances attached to a particular bundle. Can be
+ * limited to only fields of a particular type.
+ */
+function incident_map_get_field_info($entity_type, $bundle, $field_types = array()) {
+  $fields = field_info_instances($entity_type, $bundle);
+
+  $labels = array_map(function ($field) use ($field_types) {
+    $info = field_info_field($field['field_name']);
+    $info['label'] = $field['label'];
+    if (!empty($field_types)) {
+      return in_array($info['type'], $field_types) ? $info : FALSE;
+    }
+    return $info;
+  }, $fields);
+
+  return array_filter(array_combine(array_keys($fields), $labels));
+}
+
+/**
+ * Page callback.
+ */
+function incident_map_reports() {
+  $map_id = 'incident-map-default';
+
+  // Map.
+  $map = leaflet_framework_map($map_id, array(), array('height' => '300px'));
+  leaflet_framework_extend_map('incident_reports', $map_id, array(
+    'source-url' => '/geojson/incident-reports',
+  ));
+  $title = variable_get('incident-map-map-record-title', NULL);
+  if (empty($title)){
+    $title = "Incident report";
+  }
+  drupal_set_title($title);
+  // Markup.
+  return array('map' => $map);
+}
+
+/**
+ * Create a timeline filter for the incident map.
+ */
+function incident_map_timeline_filter($map, $key) {
+  drupal_add_library('incident_map', 'TimelineFilter');
+
+  $container = "$map-timeline-filter";
+
+  leaflet_framework_extend_map('incident_reports', $map, array(
+    'filters' => array(array(
+      'provider' => 'timeline',
+      'key' => $key,
+      'container' => $container
+    )),
+  ));
+
+  return theme('timeline_filter', array('id' => $container));
+}
+
+/**
+ * Create a category filter for the incident map.
+ */
+function incident_map_category_filter($map, $key, $title = NULL, $type = 'checkbox', $empty = 'None') {
+  drupal_add_library('incident_map', 'CategoryFilter');
+
+  $container = "$map-category-filter-$key";
+
+  leaflet_framework_extend_map('incident_reports', $map, array(
+    'filters' => array(array(
+      'provider' => 'category',
+      'key' => $key,
+      'empty' => $empty,
+      'type' => $type,
+      'container' => $container,
+    )),
+  ));
+
+  return theme('category_filter', array('id' => $container, 'title' => $title));
+}
+
+/**
+ * Timeline filter theme function.
+ */
+function theme_timeline_filter($vars) {
+  $markup = "";
+
+  $markup .= "<div id=\"{$vars['id']}\" class=\"incident-map-filter\">";
+  if (!empty($vars['title'])) $markup .= "<h3>{$vars['title']}</h3>";
+  $markup .= "</div>";
+
+  return array("#markup" => $markup);
+}
+
+/**
+ * Category filter theme function.
+ */
+function theme_category_filter($vars) {
+  $markup = "";
+
+  $markup .= "<div id=\"{$vars['id']}\" class=\"incident-map-filter\">";
+  if (!empty($vars['title'])) $markup .= "<h3>{$vars['title']}</h3>";
+  $markup .= "</div>";
+
+  return array('#markup' => $markup);
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function incident_map_libraries_info() {
+  return array(
+    'Leaflet.markercluster' => array(
+      'name' => 'Leaflet.markercluster',
+      'vendor url' => 'https://github.com/Leaflet/Leaflet.markercluster',
+      'download url' => 'https://github.com/Leaflet/Leaflet.markercluster/archive/master.zip',
+      'version' => '0.2',
+      'path' => 'dist',
+      'files' => array(
+        'js' => array(
+          'leaflet.markercluster-src.js' => array(),
+        ),
+        'css' => array(
+          'MarkerCluster.css' => array(),
+          'MarkerCluster.Default.css' => array(),
+          'MarkerCluster.Default.ie.css' => array(
+            'type' => 'file',
+            'media' => 'screen',
+            'browsers' => array('IE' => 'lte IE 8', '!IE' => FALSE),
+          ),
+        ),
+      ),
+    ),
+
+    'Font-Awesome' => array(
+      'name' => 'Font-Awesome',
+      'vendor url' => 'http://fortawesome.github.io/Font-Awesome',
+      'download url' => 'https://github.com/FortAwesome/Font-Awesome/zipball/master',
+      'version' => '3.0.2',
+      'path' => 'css',
+      'files' => array(
+        'css' => array(
+          'font-awesome.css' => array(),
+          'font-awesome-ie7.min.css' => array(
+            'type' => 'file',
+            'media' => 'screen',
+            'browsers' => array('IE' => 'lte IE 7', '!IE' => FALSE),
+          ),
+        ),
+      ),
+    ),
+
+    'Leaflet.awesome-markers' => array(
+      'name' => 'Leaflet.awesome-markers',
+      'vendor url' => 'https://github.com/lvoogdt/Leaflet.awesome-markers',
+      'download url' => 'https://github.com/lvoogdt/Leaflet.awesome-markers/archive/master.zip',
+      'version' => '0.0.1',
+      'path' => 'dist',
+      'files' => array(
+        'js' => array(
+          'leaflet.awesome-markers.js' => array(),
+        ),
+        'css' => array(
+          'leaflet.awesome-markers.css' => array(),
+        ),
+      ),
+    ),
+
+    'crossfilter' => array(
+      'name' => 'Crossfilter',
+      'vendor url' => 'http://square.github.io/crossfilter/',
+      'download url' => 'https://github.com/square/crossfilter/archive/v1.2.0.tar.gz',
+      'version' => '1.2.0',
+      'files' => array(
+        'js' => array(
+          'crossfilter.min.js',
+        ),
+      ),
+    ),
+
+    'd3' => array(
+      'name' => 'D3js - Data Driven Documents',
+      'vendor url' => 'd3js.org',
+      'download url' => 'http://d3js.org/d3.v3.zip',
+      'version' => 'v3',
+      'files' => array(
+        'js' => array(
+          'd3.v3.min.js',
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_library().
+ */
+function incident_map_library() {
+  global $language;
+  global $is_https;
+
+  $libraries = array();
+
+  $markercluster = libraries_detect('Leaflet.markercluster');
+  if ($markercluster) {
+    $libraries['Leaflet.markercluster'] = leaflet_framework_convert_libraries($markercluster);
+    $libraries['Leaflet.markercluster']['dependencies'][] = array('leaflet_framework', 'Leaflet');
+  }
+
+  $crossfilter = libraries_detect('crossfilter');
+  if ($crossfilter) {
+    $libraries['crossfilter'] = leaflet_framework_convert_libraries($crossfilter);
+  }
+
+  $d3 = libraries_detect('d3');
+  if ($d3) {
+    $libraries['d3'] = leaflet_framework_convert_libraries($d3);
+  }
+
+  $fontawesome = libraries_detect('Font-Awesome');
+  if ($fontawesome) {
+    $libraries['Font-Awesome'] = leaflet_framework_convert_libraries($fontawesome);
+  }
+
+  $awesomemarkers = libraries_detect('Leaflet.awesome-markers');
+  if ($awesomemarkers) {
+    $libraries['Leaflet.awesome-markers'] = leaflet_framework_convert_libraries($awesomemarkers);
+    $libraries['Leaflet.awesome-markers']['dependencies'] = array(
+      array('incident_map', 'Font-Awesome'),
+    );
+  }
+
+  $path = drupal_get_path('module', 'incident_map');
+
+  $libraries['Header'] = array(
+    'title' => 'Incident map header file',
+    'description' => 'Declares amani incident map namespace.',
+    'version' => '7.x-1.x',
+    'js' => array(
+      $path . '/js/Header.js' => array(),
+    ),
+  );
+
+  $libraries['Factory'] = array(
+    'title' => 'Factory',
+    'version' => '7.x-1.x',
+    'js' => array(
+      "$path/js/Factory.js" => array(),
+    ),
+    'dependencies' => array(
+      array('incident_map', 'Header'),
+      array('leaflet_framework', 'Leaflet'),
+    ),
+  );
+
+  $protocol = $is_https ? 'https' : 'http';
+  $google_api = url("$protocol://maps.google.com/maps/api/js", array(
+    'query' => array(
+      'v' => '3.2',
+      'language' => $language->language,
+      'sensor' => 'false',
+    ),
+    'external' => TRUE,
+  ));
+  $libraries['Layers'] = array(
+    'title' => 'Incident map layer manager plugin',
+    'version' => '7.x-1.x',
+    'js' => array(
+      $google_api => array('type' => 'external'),
+      "$path/js/Plugins/Layers.js" => array(),
+      "$path/js/Plugins/Layers/Layers.js" => array(),
+      "$path/js/Plugins/Layers/Layer/Google.js" => array(),
+      "$path/js/Plugins/Layers/Layer/GeoJSON.js" => array(),
+    ),
+    'dependencies' => array(
+      array('leaflet_framework', 'LeafletFramework'),
+      array('incident_map', 'Header'),
+      array('incident_map', 'Factory'),
+    ),
+  );
+
+  $libraries['IncidentReports'] = array(
+    'title' => 'Incident reports visualization',
+    'version' => '7.x-1.x',
+    'js' => array(
+      "$path/js/Plugins/IncidentReports/Filter.js" => array(),
+      "$path/js/Plugins/IncidentReports/ToggleControl.js" => array(),
+      "$path/js/Plugins/IncidentReports.js" => array(),
+      "$path/js/Plugins/IncidentReports/Marker.js" => array(),
+    ),
+    'css' => array(
+      "$path/css/incident_reports.css" => array(),
+    ),
+    'dependencies' => array(
+      array('incident_map', 'crossfilter'),
+      array('incident_map', 'd3'),
+      array('incident_map', 'Leaflet.awesome-markers'),
+      array('leaflet_framework', 'LeafletFramework'),
+      array('incident_map', 'Header'),
+      array('incident_map', 'Factory'),
+      array('incident_map', 'Leaflet.markercluster'),
+    ),
+  );
+
+  $libraries['CategoryFilter'] = array(
+    'title' => 'CategoryFilter',
+    'version' => '7.x-1.x',
+    'js' => array(
+      "$path/js/Plugins/IncidentReports/Filters/Category/Category.js" => array(),
+      "$path/js/Plugins/IncidentReports/Filters/CategoryFilter.js" => array(),
+    ),
+    'dependencies' => array(
+      array('incident_map', 'IncidentReports'),
+    ),
+  );
+
+  $libraries['TimelineFilter'] = array(
+    'title' => 'TimelineFilter',
+    'version' => '7.x-1.x',
+    'js' => array(
+      "$path/js/Plugins/IncidentReports/Filters/Timeline/BarChart.js" => array(),
+      "$path/js/Plugins/IncidentReports/Filters/TimelineFilter.js" => array(),
+    ),
+    'css' => array(
+      "$path/css/timeline_filter.css" => array(),
+    ),
+    'dependencies' => array(
+      array('incident_map', 'd3'),
+      array('system', 'ui.datepicker'),
+      array('incident_map', 'IncidentReports'),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_leaflet_framework_maps().
+ */
+function incident_map_leaflet_framework_maps() {
+  $maps = array();
+
+  $settings = module_invoke_all('incident_map_settings');
+  $prefix = $settings['map']['prefix'];
+
+  $view = array();
+  if (variable_get("$prefix-auto", FALSE)) {
+    geophp_load();
+    $geojson = incident_map_report_geojson();
+    $geom = geoPHP::load(drupal_json_encode($geojson), 'json');
+    $view['auto'] = $geom->getBBox();
+  }
+  else {
+    $view['center'] = array(variable_get("$prefix-lat", 0.0), variable_get("$prefix-lng", 0.0));
+    $view['zoom'] = variable_get("$prefix-zoom", 7);
+  }
+
+  $maps['incident-map-default'] = array(
+    'title' => 'Default incident map',
+    'plugins' => array(
+      'lf_view' => $view,
+      'amani_layers' => array(),
+      'fullscreen' => array(), 
+    ),
+  );
+
+  return $maps;
+}
+
+/**
+ * Implements hook_leaflet_framework_plugins().
+ */
+function incident_map_leaflet_framework_plugins() {
+  $plugins = array();
+
+  /* Amani incident map layers plugin.
+   * - Adds layers to a map as either base layers or overlays.
+   * - Adds an optional layer switcher control to the map.
+   */
+  $plugins['amani_layers'] = array(
+    'library' => array('incident_map', 'Layers'),
+    'logical' => 'Amani.Layers',
+    'switcher' => array('position' => 'topright'),
+    // 'preprocess callback' => 'incident_map_plugin_preprocess_cis_layers',
+    'layers' => array(
+      array('title' => 'Terrain', 'provider' => 'google', 'set' => 'TERRAIN', 'type' => 'base'),
+      array('title' => 'Hybrid', 'provider' => 'google', 'set' => 'HYBRID', 'type' => 'base', 'disabled' => TRUE),
+      array('title' => 'Satellite', 'provider' => 'google', 'set' => 'SATELLITE', 'type' => 'base', 'disabled' => TRUE),
+      array('title' => 'OSM', 'provider' => 'tilelayer', 'urlTemplate' => 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', 'type' => 'base', 'disabled' => TRUE),
+    ),
+  );
+
+  $plugins['incident_reports'] = array(
+    'library' => array('incident_map', 'IncidentReports'),
+    'logical' => 'Amani.IncidentReports',
+    'source-url' => '/geojson/incident-reports',
+    'filters' => array(),
+  );
+
+  return $plugins;
+}
+
+/**
+ * Incident map setting callback;
+ * Adds properties of enabled filters to geojson features.
+ */
+function incident_map_add_filters($setting, $wrapper) {
+  $prefix = $setting['prefix'];
+  $properties = array();
+
+  $filters = incident_map_filters_by_field_type();
+
+  $fields = incident_map_get_field_info('node', 'incident_report', array_keys($filters));
+  foreach ($fields as $field_name => $field_info) {
+    if (variable_get("$prefix-enabled-$field_name", FALSE)) {
+      $filter = variable_get("$prefix-$field_name", NULL);
+      $filter_info = $filters[$field_info['type']][$filter];
+      $properties[$field_name] = call_user_func($filter_info['value_callback'], $wrapper->{$field_name});
+    }
+  }
+
+  return $properties;
+}
+
+/**
+ * Incident map setting callback;
+ * Adds marker configuration to geojson features.
+ */
+function incident_map_add_markers($setting, $wrapper) {
+  $prefix = $setting['prefix'];
+  $marker = array('provider' => 'DefaultMarker');
+
+  $marker_field = variable_get("$prefix-field", NULL);
+  if ($marker_field) {
+    $tid = $wrapper->{$marker_field}->getIdentifier();
+    $color = variable_get("$prefix-color-tid-$tid", NULL);
+
+    if (!$color || $color === 'none') {
+      $color = variable_get("$prefix-color-default", NULL);
+    }
+
+    if ($color) {
+      $marker['provider'] = 'AwesomeMarker';
+      $marker['color'] = $color;
+      $marker['icon'] = variable_get("$prefix-icon-tid-$tid", NULL);
+      $marker['spin'] = variable_get("$prefix-spin-tid-$tid", FALSE);
+    }
+  }
+
+  return array('marker' => $marker);
+}
+
+/**
+ * Implements hook_incident_map_geojson_info().
+ */
+function incident_map_geojson_info() {
+  return array(
+    array(
+      'uri' => 'incident-reports',
+      'name' => 'Incident Map',
+      'callback' => 'incident_map_report_geojson',
+      'access' => array('access content'),
+      'query' => array(
+        'severity' => array('fieldCondition', 'field_incident_severity:tid', '=', NULL),
+        'type' => array('fieldCondition', 'field_incident_report_type:tid', '=', NULL),
+        'from' => array('fieldCondition', 'field_incident_date:value', '>=', NULL),
+        'to' => array('fieldCondition', 'field_incident_date:value', '<=', NULL),
+      ),
+    ),
+  );
+}
+
+/**
+ * Callback for generating incident map geojson.
+ */
+function incident_map_report_geojson($info = array()) {
+  $library = libraries_load('geojson');
+  if (!$library || !isset($library['installed'])) {
+    return MENU_NOT_FOUND;
+  }
+
+  $query = new EntityFieldQuery();
+  if (isset($info['query'])) {
+    incident_map_query_handler($query, $info['query']);
+  }
+
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'incident_report')
+    ->fieldCondition('field_incident_geolocation', 'geom', 'NULL', '!=');
+
+  $result = $query->execute();
+  $nids = empty($result['node']) ? array() : array_keys($result['node']);
+  $wrappers = entity_metadata_wrapper('list<node>', $nids);
+
+  $factory = 'incident_report_geojson_feature_factory';
+  return Affinity\GeoJSON\feature_collection($wrappers, $factory);
+}
+
+/**
+ * GeoJSON feature factory.
+ * Creates GeoJSON features from incident_report nodes.
+ *
+ * @see Affinity\GeoJSON\feature_collection()
+ *
+ * return array
+ *    A GeoJSON feature object.
+ *    (see: Affinity\GeoJSON\feature()).
+ */
+function incident_report_geojson_feature_factory($wrapper) {
+  $geofield = $wrapper->field_incident_geolocation;
+  $geom = Affinity\GeoJSON\create_geophp_geometry($geofield, 'incident_report_get_geom');
+  if (empty($geom)) return NULL;
+
+  $uri = entity_uri($wrapper->type(), $wrapper->value());
+
+  $teaser = node_view($wrapper->value(), 'teaser');
+  $properties = array(
+    'title' => $wrapper->label(),
+    'uri' => $uri['path'],
+    'teaser' => drupal_render($teaser),
+  );
+
+  foreach (module_invoke_all('incident_map_settings') as $setting) {
+    if (isset($setting['properties_callback'])) {
+      $callback = $setting['properties_callback'];
+      $properties += call_user_func($callback, $setting, $wrapper);
+    }
+  }
+
+  return Affinity\GeoJSON\feature($geom, $properties);
+}
+
+/**
+ * Converts a single Geofield value into a GeoPHP Geometry object.
+ *
+ * @see Affinity\GeoJSON\create_geophp_geometry().
+ */
+function incident_report_get_geom($wrapper) {
+  geophp_load();
+  return geoPHP::load($wrapper->geom->value(), 'wkt');
+}
+
+
+/**
+ * Parses URL query string parameters for arguments defined in $conditions and
+ * converts them to EFQ conditions.
+ *
+ * @param array $conditions
+ *    A key->value list of allowed query condtions in the format:
+ *      array(condition_type, field[:column], operator, default).
+ *
+ * @return EntityFieldQuery
+ *    A query object with conditions applied.
+ */
+function incident_map_query_handler($query, $conditions) {
+  $params = drupal_get_query_parameters();
+
+  foreach ($conditions as $key => $condition) {
+    $method = array_shift($condition);
+    $value = isset($params[$key]) ? $params[$key] : NULL;
+
+    $args = incident_map_process_condition($method, $condition, $value);
+
+    if (!empty($args)) {
+      call_user_func_array(array($query, $method), $args);
+    }
+  }
+}
+
+/**
+ * Process an individual condition definition.
+ *
+ * @return array
+ *    An array of arguments to be passed to the EFQ condition method.
+ */
+function incident_map_process_condition($method, $operands, $value = NULL) {
+  list($name, $operator, $default) = $operands;
+
+  if (is_null($value)) {
+    // Don't apply a condition if no value and no default.
+    if (is_null($default)) return;
+
+    $value = $default;
+  }
+
+  switch ($method) {
+    case 'entityCondition':
+    case 'propertyCondition':
+      return array($name, $value, $operator);
+    case 'fieldCondition':
+      list($name, $column) = explode(':', $name);
+      return array($name, $column, $value, $operator);
+    default:
+      throw new InvalidArgumentException();
+  }
+}
+
+
+/**
+ * TODO: Add these in a patch for Date module (see: http://drupal.org/node/1663346).
+ */
+
+/**
+ * Implements hook_entity_query_alter().
+ *
+ * Adds support for date functions in EFQ field condtions on date fields.
+ * When we detect a field condition against a date field, we move the condition
+ * into MetaData and add a tag 'date_operation' tag to the query to flag it for
+ * a hook_query_TAG_alter().
+ */
+function incident_map_entity_query_alter($query) {
+  $date_conditions = array();
+
+  foreach ($query->fieldConditions as $index => $condition) {
+    $type = $condition['field']['type'];
+    if (in_array($type, array('date', 'datetime'))) {
+      // TODO: Use of $index (an integer) as a arbitrary key could be problematic.
+      $date_conditions[$index] = $condition;
+      unset($query->fieldConditions[$index]);
+    }
+  }
+
+  if (!empty($date_conditions)) {
+    $query->addTag('date_condition');
+    $query->addMetaData('date_conditions', $date_conditions);
+  }
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Using parameters from the stashed EFQ field condition, generate a WHERE
+ * clause snippet using MySQL date methods and append it to the query.
+ */
+function incident_map_query_date_condition_alter($query) {
+  $conditions = $query->conditions();
+
+  foreach ($query->alterMetaData['date_conditions'] as $index => $condition) {
+    $storage = $condition['field']['storage'];
+    if ($storage['type'] !== 'field_sql_storage') {
+      // TODO: Do something other than siliently fail.
+      // Currently this only supports SQL backends.
+      return;
+    }
+
+    // TODO: Manually constructing these table and column aliases feels wrong.
+    $field_name = $condition['field']['field_name'];
+    $column = $condition['column'];
+    $value = new DateObject($condition['value']);
+    $operator = $condition['operator'];
+
+    $table_name = "field_data_$field_name";
+    $column_name = $storage['details']['sql'][FIELD_LOAD_CURRENT][$table_name][$column];
+    $field = "{$table_name}{$index}.$column_name";
+
+    $date_handler = new date_sql_handler();
+    // TODO: This might have security implications as date_sql_handler::sql_where_date()
+    //       doesn't use DB placeholders.
+    // TODO: It probably could be made to be a little more flexible; support
+    //       other 'type' parameters to sql_where_date().
+    $clause = $date_handler->sql_where_format(DATE_FORMAT_DATETIME, $field, $operator, $value->format(DATE_FORMAT_DATETIME));
+
+    $query->where($clause);
+  }
+}

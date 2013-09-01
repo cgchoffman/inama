@@ -1,0 +1,93 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function geojson_menu() {
+  $items = array();
+
+  foreach (geojson_info() as $info) {
+     $item = array(
+      'title' => $info['name'],
+      'description' => '',
+      'page callback' => 'geojson_json_menu_callback',
+      'page arguments' => array($info['callback'], $info),
+      'access arguments' => array(),
+      'type' => MENU_CALLBACK,
+    );
+
+    if (isset($info['arguments'])) {
+      $item['page arguments'] += $info['arguments'];
+    }
+
+    if (isset($info['access'])) {
+      $item['access arguments'] += $info['access'];
+    }
+
+    $items["geojson/{$info['uri']}"] = $item;
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function geojson_libraries_info() {
+  return array(
+    'geojson' => array(
+      'name' => 'GeoJSON',
+      'vendor url' => 'https://github.com/affinitybridge/php-geojson',
+      'download url' => 'git@github.com:affinitybridge/php-geojson.git',
+      'version' => '0.0.1',
+      'files' => array(
+        'php' => array(
+          'geojson.php'
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * GeoJSON menu callback.
+ *
+ * Get's GeoJSON object from arguments and sends it to client with appropriate
+ * headers.
+ */
+function geojson_json_menu_callback() {
+  $args = func_get_args();
+  $callback = array_shift($args);
+
+  $data = call_user_func_array($callback, $args);
+
+  if (!$data) {
+    return MENU_NOT_FOUND;
+  }
+  else if (is_numeric($data)) {
+    return $data;
+  }
+
+  geojson_response_json($data);
+}
+
+/**
+ * Sends a JSON encoded data to client as a properly defined JSON response.
+ */
+function geojson_response_json($data) {
+  // Send results to client as json and terminate request.
+  drupal_add_http_header('Content-Type', 'application/json; charset=utf-8');
+  print drupal_json_encode($data);
+  ajax_footer();
+}
+
+/**
+ * Get all incident map geojson.
+ *
+ * Invokes hook_geojson_info().
+ */
+function geojson_info() {
+  // TODO: Cache here.
+  $resources = module_invoke_all('geojson_info');
+  return $resources;
+}

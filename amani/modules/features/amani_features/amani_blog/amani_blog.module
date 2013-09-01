@@ -1,0 +1,34 @@
+<?php
+/**
+ * @file
+ * Drupal needs this blank file.
+ */
+include_once 'amani_blog.features.inc';
+
+/**
+ * Implements hook_default_fields_alter().
+ */
+function amani_blog_field_default_fields_alter(&$fields) {
+  // Override field_content_image
+  if (isset($fields['node-blog-field_content_image'])) {
+    // Use image widget
+    $fields['node-blog-field_content_image']['field_instance']['widget']['module'] = 'image';
+    $fields['node-blog-field_content_image']['field_instance']['widget']['type'] = 'image_image';
+    $fields['node-blog-field_content_image']['field_instance']['widget']['settings'] = array(
+      'preview_image_style' => 'thumbnail',
+      'progress_indicator' => 'throbber',
+    );
+    // Set file directory and alt field
+    $fields['node-blog-field_content_image']['field_instance']['settings'] = array(
+      'alt_field' => 1,
+      'default_image' => 0,
+      'file_directory' => 'blog-field_content_image',
+      'file_extensions' => 'png gif jpg jpeg',
+      'max_filesize' => '',
+      'max_resolution' => '',
+      'min_resolution' => '',
+      'title_field' => 0,
+      'user_register_form' => FALSE,
+    );
+  }
+}

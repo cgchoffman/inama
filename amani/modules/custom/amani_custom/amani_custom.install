@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * Enables translation modules.
+ */
+function amani_custom_update_7000() {
+
+  db_update('system')
+    ->fields(array('weight' => 80))
+    ->condition('name', 'amani_custom', '=')
+    ->execute();
+
+  return t('Updated module weight to 80.');
+}
+
+function amani_custom_update_7001() {
+
+  db_update('system')
+    ->fields(array('weight' => 80))
+    ->condition('name', 'amani_custom', '=')
+    ->execute();
+
+  return t('Updated module weight to 80.');
+}
+
+function amani_custom_update_7002() {
+  enable_image_file_display();
+  return t('Updated file display settings.');
+}
+

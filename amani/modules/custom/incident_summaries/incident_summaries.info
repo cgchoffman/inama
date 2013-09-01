@@ -1,0 +1,6 @@
+name = Incident Summaries
+description = Provides aggregated values corresponding to number of incidents in a timeframe.
+core = 7.x
+dependencies[] = bean
+package = Custom Incident Summaries
+files[] = "plugins/bean/bean_incident_summaries.summaries_block.inc"

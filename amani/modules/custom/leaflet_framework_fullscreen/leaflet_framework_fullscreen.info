@@ -1,0 +1,5 @@
+name = Leaflet Framework Fullscreen
+description = "Adds a fullscreen button to maps."
+package = Leaflet Framework
+core = 7.x
+dependencies[] = leaflet_framework

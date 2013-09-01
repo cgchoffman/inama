@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Social media feature.
+ */
+
+include_once 'amani_social_media.features.inc';

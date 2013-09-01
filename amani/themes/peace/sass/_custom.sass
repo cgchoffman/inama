@@ -1,0 +1,437 @@
+// Custom
+// ------
+// This file is used to define custom overrides and
+// style changes to be used for building your theme.
+// Documentation: http://sass-lang.com/docs/yardoc/_index.html
+
+// Import variables and mixins to be used.
+@import _config.sass
+
+body
+  background: $grey_dark
+  font-family: "bariol_regularregular"
+
+#main,
+#content-top
+  background: $blue_light
+
+a
+  outline: 0
+  border: 0
+  @include transition(color 0.4s ease, background-color 0.4s ease)
+  &:link, &:visited
+    color: $orange
+  &:hover, &:active
+    color: lighten($orange, 10%)
+    text-decoration: none
+
+// Logo
+#name-and-slogan
+  @include span-columns(3)
+  @include media($motab)
+    @include fill-parent
+    text-align: center
+  .site-slogan
+    font-style: oblique
+    font-size: 14px
+    color: #999
+    font-family: Georgia
+    text-align: center
+#site-name
+  text-align: center
+  a
+    display: inline-block
+    height: 70px
+    width: 92px
+    background-repeat: no-repeat
+    text-indent: -9999px
+    overflow: hidden
+    background-size: 100%
+
+// header
+#header
+  background: #fff
+  box-shadow: 0 8px 8px #c8c8c8
+  .container-inner
+    position: relative
+
+// Yellow button plus.
+a.button
+  background: $orange url('../images/icons/yellow_button_plus.png') 100% 50% no-repeat
+  padding: $padding - 10px
+  padding-right: $padding*3
+  color: #fff
+  font-family: "bariol_regularregular"
+  font-style: oblique
+  display: inline-block
+  font-size: 25px
+  font-weight: normal
+  box-shadow: 3px 3px 8px #999
+  &:after
+    content: "" !important
+
+// Header region
+#header-region
+  @include span-columns(9)
+  @include omega
+  @include media($motab)
+    margin-bottom: $margin*1.5
+    #block-locale-language,
+    #block-menu-menu-meta,
+    #block-search-form,
+    #block-menu-menu-social-media
+      display: none !important
+
+// remove ajax throbber
+.page-team .ajax-progress-throbber
+  display: none
+
+// Gallery styles
+.meta-wrapper
+  .media-title
+    font-family: "bariol_regularregular"
+    text-transform: uppercase
+    font-weight: normal
+    font-size: 16px
+    color: $orange
+    a
+      color: $orange
+  .media-description
+    font-size: 13px
+    font-family: "Georgia"
+    color: #444
+
+// Region top
+.region-home-content-top-rotator
+  @include fill-parent
+  @include omega
+  margin-bottom: $margin
+  background: #fff
+  .left-col
+    @include span-columns(8)
+    @include media($tablet)
+      @include fill-parent
+    .field-content
+      display: block
+      line-height: 0
+    a
+      display: block
+      line-height: 0
+  .right-col
+    @include span-columns(4)
+    @include omega
+    padding: $padding
+    @include media($tablet)
+      @include fill-parent
+    h2
+      font-size: 24px
+      line-height: 1.24
+
+.region-home-content-top-callout-right
+  @include span-columns(3)
+  @include omega
+  @include media($motab)
+    @include fill-parent
+    #block-bean-become-a-pilot-project
+      margin-bottom: 0
+  .block
+    @include fill-parent
+    @include omega
+    padding: $padding
+    background: #fff
+    margin-bottom: $margin
+
+.region-home-content-top-static-region
+  @include fill-parent
+  @include omega
+  .block
+    @include span-columns(4)
+    @include omega(3n)
+    padding: $padding
+    background: #fff
+    @include media($motab)
+      @include fill-parent()
+      @include omega()
+    .views-field-field-image img
+      width: 100%
+      height: auto
+    .views-field-title
+      text-transform: uppercase
+      margin: 5px 0
+      font-size: 16px
+      color: $orange
+
+// Menu
+.sf-menu.sf-horizontal.sf-shadow ul,
+.sf-menu.sf-vertical.sf-shadow ul,
+.sf-menu.sf-navbar.sf-shadow ul ul
+  background: #fff
+  padding: $padding/2 !important
+  box-shadow: 0 0 20px #ccc
+  @include border-radius(0, 0, 5px, 5px)
+
+// Programs page.
+.page-programs
+  .views-row
+    @include span-columns(4 of 8)
+    @include omega(2n)
+    background: #fff
+    padding: $padding
+    margin-bottom: $margin
+    @include media($motab)
+      @include fill-parent
+    .views-field-title
+      text-transform: uppercase
+      font-size: 16px
+      margin-bottom: 5px
+    .views-field-body
+      font-family: "Georgia"
+    .views-field-field-media
+      img
+        width: 100%
+        height: auto
+
+// Navigation
+#navigation,
+#block-superfish-superfish_1,
+#block-superfish-1,
+#block-menu-menu-amani-main-menu
+  #header-region &
+    position: absolute
+    bottom: $gutter/2
+    .content
+      font-size: 16px
+      li
+        margin-right: $margin/4
+        background: url('../images/icons/bullet.png') 100% 50% no-repeat
+        padding-right: $padding/2
+        padding-left: 0
+        margin-left: 0
+        display: inline-block
+        padding-top: 0
+        &:last-child
+          background: none
+          padding-right: 0
+          margin-right: 0
+        a
+          &:link, &:visited,
+          &.active
+            color: $orange
+          &:hover, &:active
+            color: lighten($orange, 10%)
+
+// Mobile menu
+.mobile-menu-link
+  display: none
+  text-align: center
+  @include media($motab)
+    display: block
+    background: #fff
+    padding: $padding/2 0
+    border-top: 1px solid #ccc
+    border-bottom: 1px solid #ccc
+    text-transform: uppercase
+#header-region #block-superfish-1
+  display: block !important
+  @include media($bt_motab)
+    #superfish-1
+      display: block !important
+  @include media($motab)
+    position: absolute
+    top: 158px
+    display: block !important
+    left: 0
+    background: #fff
+    z-index: 9999
+    width: 100%
+    &.fixed
+      position: fixed
+      top: 0
+      height: 50px
+    //padding: $padding
+    #superfish-1
+      background: #fff
+      display: none
+      box-shadow: 0 10px 10px #999
+      li
+        display: block
+        text-align: center
+        float: none
+        padding: $padding/2 0
+        margin: 0
+        background: none
+        @include media($motab)
+          ul
+            width: 100% !important
+        &.last
+          margin-bottom: $margin/2
+        a
+          border-bottom: 1px solid $orange
+          display: inline
+          padding: $padding/3 0
+          color: #333
+// Sidebar
+#sidebar-second
+  .block
+    background: #fff
+    padding: $padding/2 $padding/3 $padding
+    box-shadow: 2px 3px 4px #c8c8c8
+    margin: $margin 0
+    &:first-child
+      margin-top: 0
+    &:last-child
+      margin-bottom: 0
+    h2.block-title
+      font-family: "bariol_regularregular"
+      font-size: 20px
+      border-bottom: 2px solid $orange
+      text-align: left
+      color: $grey_dark
+      padding-bottom: $padding/4
+      margin-bottom: $margin/2
+    ul.menu
+      li
+        list-style-type: none
+        list-style-image: none
+    a
+      &:after
+        content: " \bb"
+    .block
+      padding: 0
+      box-shadow: none
+
+// News and Events
+.view-news-and-events
+  .views-row
+    overflow: hidden
+    .views-field-field-media
+      @include span-columns(2 of 5)
+      img
+        width: 100%
+        height: auto
+
+// Blog
+.view-news-and-events-blog
+  .views-row
+    overflow: hidden
+    .views-field-field-media
+      @include span-columns(2 of 5)
+      img
+        width: 100%
+        height: auto
+
+    .views-field-field-content-image
+      @include span-columns(2 of 5)
+      img
+        width: 100%
+        height: auto
+
+// pager styles
+.item-list
+  ul.pager
+    margin-top: $margin
+    padding-top: $padding
+    border-top: 1px solid $grey
+
+.node-article
+  .field-name-field-media
+    background: #eee
+    padding: $padding
+    margin-bottom: $margin
+    text-align: center
+    img
+      margin-bottom: $margin/2
+// Footer
+#footer
+  background: $grey_dark
+  color: #fff
+  font-family: "georgia"
+  .container-inner
+    position: relative
+  .content
+    font-size: 14px
+  a
+    &:link, &:visited
+      color: #fff
+    &:hover, &:active
+      color: lighten($orange, 10%)
+      text-decoration: none
+  #block-bean-amani-powered-by
+    @include span-columns(3 of 12)
+    @include media($motab)
+      @include fill-parent
+      @include omega
+      margin-bottom: $margin
+      border: 0
+      text-align: center
+  #block-system-main-menu,
+  #block-menu-menu-amani-main-menu,
+  #block-menu-menu-meta
+    @include span-columns(3 of 12)
+    margin-bottom: $margin
+    @include media($motab)
+      @include fill-parent
+      @include omega
+      margin-bottom: $margin
+      border: 0
+      ul.menu
+        li
+          text-align: center
+    ul.menu
+      li
+        list-style-type: none
+        list-style-image: none
+  #block-bean-amani-special-thanks
+    @include span-columns(3 of 12)
+    margin-bottom: $margin
+    position: absolute
+    right: 0
+    margin-right: 0
+    @include media($motab)
+      @include fill-parent
+      @include omega
+      text-align: center
+      position: static
+  #block-search-form
+    @include span-columns(3 of 12)
+    @include media($motab)
+      @include fill-parent
+      @include omega
+      margin-bottom: $margin
+
+// accordian styling
+.ui-accordion .ui-accordion-header
+  margin-top: 5px
+.field-group-accordion-wrapper
+  .field-group-accordion-item
+    border: 0
+    background: none
+    padding: 0
+  h3.ui-accordion-header
+    border: 1px solid #ccc
+    background: #fff
+    padding: 10px 10px 10px 2em
+    font-size: 22px
+
+// breadcrumb
+.breadcrumb
+  @include fill-parent
+  font-style: oblique
+  font-size: 11px
+  color: #999
+  font-family: Georgia
+  position: relative
+  top: -$margin/2
+  @include media($motab)
+    @include fill-parent
+    @include outer-container
+  a
+    color: #999
+    margin: 0 $margin/6
+    &:first-child
+      margin-left: 0
+    &:last-child
+      color: $orange
+      font-style: normal
+  @include media($mobile)
+    top: 0px

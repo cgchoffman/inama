@@ -1,0 +1,340 @@
+<?php
+
+/**
+ * Implements hook_requirements().
+ */
+function leaflet_framework_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime' && !file_exists(libraries_get_path('Leaflet') . '/dist/leaflet.js')) {
+    $requirements['leaflet_framework'] = array(
+      'title' => t('Leaflet library not found'),
+      'value' => t('The !leaflet javascript library was not found. Please !download it into the libraries folder.',
+        array(
+          '!leaflet' => l('Leaflet', 'http://leafletjs.com'),
+          '!download' => l('download', 'http://leafletjs.com/download.html'),
+        )
+      ),
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function leaflet_framework_libraries_info() {
+  return array(
+    'leaflet' => array(
+      'name' => 'Leaflet',
+      'vendor url' => 'https://github.com/affinitybridge/leaflet_framework',
+      'download url' => 'git@github.com:affinitybridge/leaflet_framework.git',
+      'path' => 'dist',
+      'version' => '0.5.1',
+      'files' => array(
+        'js' => array(
+          'leaflet-src.js',
+        ),
+        'css' => array(
+          'leaflet.css' => array(),
+          'leaflet.ie.css' => array(
+            'type' => 'file',
+            'media' => 'screen',
+            'browsers' => array('IE' => 'lte IE 8', '!IE' => FALSE),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_library().
+ */
+function leaflet_framework_library() {
+  $libraries = array();
+
+  $leaflet = libraries_detect('leaflet');
+  if ($leaflet) {
+    $libraries['Leaflet'] = leaflet_framework_convert_libraries($leaflet);
+    $leaflet_path = base_path() . libraries_get_path('leaflet');
+    $libraries['Leaflet']['js'][] = array(
+      'type' => 'inline',
+      'data' => "L.Icon.Default.imagePath = '$leaflet_path/dist/images';",
+      'group' => JS_LIBRARY,
+      'preprocess' => FALSE
+    );
+  }
+
+  $path = drupal_get_path('module', 'leaflet_framework');
+
+  $libraries['DrupalAttachBehavior'] = array(
+    'title' => 'Attach behavior',
+    'version' => '7.x-1.x',
+    'js' => array(
+      $path . '/js/DrupalAttachBehavior.js' => array(),
+    ),
+    'dependencies' => array(
+      array('leaflet_framework', 'LeafletFramework'),
+    ),
+  );
+
+  $libraries['LeafletFramework'] = array(
+    'title' => 'LeafletFramework',
+    'version' => '7.x-1.x',
+    'js' => array(
+      $path . '/js/LeafletFramework/LeafletFramework.js' => array(),
+      $path . '/js/LeafletFramework/Util.js' => array(),
+      $path . '/js/LeafletFramework/Plugin.js' => array(),
+      $path . '/js/LeafletFramework/Core.js' => array(),
+    ),
+    'dependencies' => array(
+      array('leaflet_framework', 'Leaflet'),
+    ),
+  );
+
+  $libraries['LayersPlugin'] = array(
+    'title' => 'LayersPlugin',
+    'version' => '7.x-1.x',
+    'js' => array(
+      $path . '/js/LeafletFramework/Handlers/Layers.js' => array(),
+      $path . '/js/LeafletFramework/Plugins/LayersPlugin.js' => array(),
+    ),
+    'dependencies' => array(
+       array('leaflet_framework', 'LeafletFramework'),
+    ),
+  );
+
+  $libraries['ViewPlugin'] = array(
+    'title' => 'ViewPlugin',
+    'version' => '7.x-1.x',
+    'js' => array(
+      $path . '/js/LeafletFramework/Handlers/View.js' => array(),
+      $path . '/js/LeafletFramework/Plugins/ViewPlugin.js' => array(),
+    ),
+    'dependencies' => array(
+      array('leaflet_framework', 'LeafletFramework'),
+    ),
+  );
+
+  $libraries['ScalePlugin'] = array(
+    'title' => 'ScalePlugin',
+    'version' => '7.x-1.x',
+    'js' => array(
+      $path . '/js/LeafletFramework/Plugins/ScalePlugin.js' => array(),
+    ),
+    'dependencies' => array(
+      array('leaflet_framework', 'LeafletFramework'),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Converts a Libraries module 2.x library definition to a version compatible
+ * with core's hook_library().
+ */
+function leaflet_framework_convert_libraries($library) {
+  $path = "{$library['library path']}";
+  if (isset($library['path'])) {
+    $path .= "/{$library['path']}";
+  }
+
+  foreach ($library['files'] as $type => $files) {
+    $definition = array();
+    foreach ($files as $file_name => $opts) {
+      $definition["$path/$file_name"] = $opts;
+    }
+    $library[$type] = $definition;
+  }
+
+  $library['title'] = $library['name'];
+
+  return $library;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function leaflet_framework_theme($existing, $type, $theme, $path) {
+  return array(
+    'lf_map' => array(
+      'variables' => array('map_id' => NULL, 'height' => '550px'),
+      'template' => 'lf_map',
+    ),
+  );
+}
+
+/**
+ * Implements hook_leaflet_framework_maps().
+ */
+function leaflet_framework_leaflet_framework_maps() {
+  return array(
+    'default' => array(
+      'title' => 'Map',
+      'defaults' => array(
+        'height' => '550px'
+      ),
+      'plugins' => array(
+        'lf_layers' => array(),
+        'lf_view' => array(),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_leaflet_framework_plugin().
+ */
+function leaflet_framework_leaflet_framework_plugins() {
+  $plugins = array();
+
+  /* Default layers plugin.
+   * - Adds layers to a map as either base layers or overlays.
+   * - Adds an optional layer switcher control to the map.
+   */
+  $plugins['lf_layers'] = array(
+    'library' => array('leaflet_framework', 'LayersPlugin'),
+    'logical' => 'LF.Plugin.Layers',
+    'switcher' => array('position' => 'topright'),
+    'layers' => array(
+      array(
+        'title' => 'OSM',
+        'url' => 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'type' => 'base',
+      ),
+    ),
+  );
+
+  /* Default map view plugin.
+   * - Sets map center and zoom level.
+   */
+  $plugins['lf_view'] = array(
+    'library' => array('leaflet_framework', 'ViewPlugin'),
+    'logical' => 'LF.Plugin.View',
+    'center' => array(0.0, 0.0),
+    'zoom' => 3,
+  );
+
+  /* Default map scale plugin.
+   * - Adds the Leaflet scale control to a map.
+   */
+  $plugins['lf_scale'] = array(
+    'library' => array('leaflet_framework', 'ScalePlugin'),
+    'logical' => 'LF.Plugin.Scale',
+  );
+
+  return $plugins;
+}
+
+/**
+ * Get a map definition.
+ * Declares: hook_leaflet_framework_maps().
+ */
+function leaflet_framework_maps($name = NULL) {
+
+  // TODO: Add caching here.
+
+  $maps = module_invoke_all('leaflet_framework_maps');
+
+  foreach ($maps as &$map) {
+    $map['defaults'] = isset($map['defaults']) ? $map['defaults'] : array();
+    $map['plugins'] = isset($map['plugins']) ? $map['plugins'] : array();
+  }
+
+  if (empty($name)) {
+    return $maps;
+  }
+
+  return isset($maps[$name]) ? $maps[$name] : FALSE;
+}
+
+/**
+ * Get a plugin
+ * Declares: hook_leaflet_framework_plugin().
+ */
+function leaflet_framework_plugin($name = NULL) {
+
+  // TODO: Add caching here.
+
+  $plugins = module_invoke_all('leaflet_framework_plugins');
+
+  drupal_alter('leaflet_framework_plugins', $plugins);
+
+  if (empty($name)) {
+    return $plugins;
+  }
+
+  return isset($plugins[$name]) ? $plugins[$name] : FALSE;
+}
+
+/**
+ * Create a Leaflet map.
+ */
+function leaflet_framework_map($id = 'default', $plugins = array(), $defaults = array()) {
+  $map = leaflet_framework_maps($id);
+
+  // Use default map plugins if no none are provided.
+  if (!$map) {
+    $map = leaflet_framework_maps('default');
+  }
+  $defaults = array_merge($map['defaults'], $defaults);
+  $plugins = array_merge($map['plugins'], $plugins);
+
+  foreach ($plugins as $name => $options) {
+    leaflet_framework_extend_map($name, $id, $options);
+  }
+
+  return array(
+    '#attached' => array(
+      'library' => array(
+        array('leaflet_framework', 'DrupalAttachBehavior'),
+      ),
+      'js' =>  array(
+        array('data' => array(
+          'leaflet_framework' => array($id => array(
+            'defaults' => $defaults,
+            'plugins' => array()
+          )),
+        ), 'type' => 'setting'),
+      ),
+    ),
+    '#theme' => 'lf_map',
+    '#map_id' => $id
+  );
+}
+
+/**
+ * Register additional plugins against a specific map.
+ */
+function leaflet_framework_extend_map($name, $map_id, $options = array()) {
+  $plugin = leaflet_framework_plugin($name);
+  if (empty($plugin)) return;
+
+  $library = $plugin['library'];
+  unset($plugin['library']);
+
+  $options = array_merge($plugin, $options);
+
+  // Give the module declaring the plugin a final say on the options passed 
+  // into it.
+  if (isset($plugin['preprocess callbacks']) && !empty($plugin['preprocess callbacks'])) {
+    foreach ($plugin['preprocess callbacks'] as $preprocess) {
+      $preprocess($options);
+    }
+    unset($plugin['preprocess callbacks']);
+  }
+
+  drupal_add_library($library[0], $library[1]);
+
+  if (!empty($options) && isset($options['logical'])) {
+    drupal_add_js(array('leaflet_framework' => array(
+      $map_id => array(
+        'plugins' => array($name => $options),
+      ),
+    )), 'setting');
+  }
+}

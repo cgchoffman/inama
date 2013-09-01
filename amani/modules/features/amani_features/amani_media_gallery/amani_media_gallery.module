@@ -1,0 +1,30 @@
+<?php
+/**
+ * @file
+ * Drupal needs this blank file.
+ */
+
+include_once 'amani_media_gallery.features.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function amani_media_gallery_menu() {
+  $items = array();
+
+  $items['gallery'] = array(
+    'title' => t('Galleries'),
+    'description' => '',
+    'page callback' => 'amani_media_gallery_list_galleries',
+    'access arguments' => array('access content'),
+  );
+
+  return $items;
+}
+
+function amani_media_gallery_list_galleries() {
+  $vocab = taxonomy_vocabulary_machine_name_load('gallery_collections');
+  $tids = taxonomy_get_tree($vocab->vid);
+  module_load_include('inc', 'media_gallery', 'media_gallery.pages');
+  return media_gallery_list_galleries(taxonomy_term_load($tids[0]->tid));
+}

@@ -1,0 +1,17 @@
+name = Amani: Media Gallery
+description = Setup for photo gallery based using Media Gallery module
+core = 7.x
+package = Amani
+php = 5.2.4
+dependencies[] = context
+dependencies[] = media_gallery
+dependencies[] = multiform
+dependencies[] = plupload
+dependencies[] = strongarm
+features[context][] = gallery-content-type
+features[context][] = gallery_page
+features[ctools][] = context:context:3
+features[ctools][] = strongarm:strongarm:1
+features[features_api][] = api:1
+features[variable][] = pathauto_node_media_gallery_pattern
+features[variable][] = pathauto_taxonomy_term_gallery_collections_pattern

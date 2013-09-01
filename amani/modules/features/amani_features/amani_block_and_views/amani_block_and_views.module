@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Amani: Block and Views feature.
+ */
+
+include_once 'amani_block_and_views.features.inc';

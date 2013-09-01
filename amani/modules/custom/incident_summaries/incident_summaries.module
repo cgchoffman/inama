@@ -1,0 +1,30 @@
+<?php
+/**
+ *@file 
+ *Bean plugin for showing incident summaries 
+ */
+
+/**
+ * Implements hook_bean_types_api_info().
+ */
+function incident_summaries_bean_types_api_info() {
+	return array('api' => 4); 
+}
+
+/**
+ * Implements hook_bean_types().
+ */
+function incident_summaries_bean_types() {
+	$plugins = array(); 
+	$plugins['summaries_block'] = array(
+		'label' => t('Incident Summary'), 
+		'description' => t('Aggregated values representing number of incidents in a timeframe.'), 
+		'handler' => array(
+			'class' => 'IncidentSummariesBean', 
+			'parent' => 'bean', 
+			'path' => drupal_get_path('module', 'incident_summaries').'/plugins/bean',
+			'file' => 'bean_incident_summaries.summaries_block.inc', 
+		), 
+	); 
+	return $plugins; 
+}

@@ -1,0 +1,42 @@
+<?php
+
+/**
+ * Disable unused features and delete associated content types and vocabularies.
+ */
+function amani_overrides_update_7001() {
+
+  $features = array(
+    'debut_book',
+    'debut_highlighted',
+    'debut_link',
+    'debut_location',
+    'debut_member',
+    'debut_section',
+  );
+
+  module_disable($features);
+  drupal_uninstall_modules($features, FALSE);
+
+  $types = array(
+    'book',
+    'highlighted',
+    'link',
+    'location',
+    'member_page',
+    'section',
+  );
+
+  foreach ($types as $type) {
+    node_type_delete($type);
+    variable_del('forward_display_' . $type);
+    variable_del('menu_options_' . $type);
+    variable_del('menu_parent_' . $type);
+    variable_del('node_options_' . $type);
+    variable_del('node_preview_' . $type);
+    variable_del('node_submitted_' . $type);
+  }
+
+  $vocab = taxonomy_vocabulary_machine_name_load('location_type');
+  taxonomy_vocabulary_delete($vocab->vid);
+
+}

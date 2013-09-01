@@ -1,0 +1,12 @@
+<?php
+
+include_once('amani_social.features.inc');
+
+/**
+ * Implements hook_modules_enabled().
+ */
+function amani_social_modules_enabled($modules) {
+  module_load_include('inc', 'amani_social', 'amani_social.util');
+  amani_social_add_node_types($modules);
+}
+

@@ -1,0 +1,44 @@
+<?php
+
+include_once('amani_custom.inc');
+/**
+ * Implements hook_block_view_alter().
+ */
+function amani_custom_block_view_alter(&$data, $block) {
+
+  if (isset($block->bid)) {
+    switch($block->bid) {
+      case "system-main-menu":
+      case "menu-menu-amani-main-menu":
+      case "menu-menu-meta":
+      case "menu-menu-social-media":
+      case "284":
+      case 'locale-language':
+        // Remove the title from the menu block.
+        $data['subject'] = '';
+        break;
+      case "superfish-1":
+        $data['subject'] = '';
+        // Add mobile menu link.
+        $data['content'] = '<div class="mobile-menu-link"><a href="#">' . t('Menu') . '</a></div>' . $data['content'];
+        //krumo($data);
+        break;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function amani_custom_form_alter(&$form, &$form_state, $form_id) {
+  switch($form_id) {
+    case 'views_exposed_form':
+      // switch based on form #id.
+      switch($form['#id']) {
+        case 'views-exposed-form-team-page':
+          $form['field_team_contact_type_value']['#options']['All'] = t('our team') . '...';
+          break;
+      }
+      break;
+  }
+}
