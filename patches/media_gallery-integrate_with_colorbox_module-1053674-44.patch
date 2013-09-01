@@ -1,0 +1,406 @@
+From 93d2bad5d6aad49204bc643e756856d6a0daffec Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Zolt=C3=A1n=20Adamek?= <adamek.zoltan@gmail.com>
+Date: Fri, 20 Jan 2012 16:54:26 +0100
+Subject: [PATCH] Improves patch:
+ http://drupal.org/files/integrate_with_colorbox_module-1053674-37.patch
+
+Fixes minor coding style issue.
+Adds download information to the README.
+---
+ README.txt              |    5 +-
+ colorbox-display.js     |   61 ++++++++++++++--
+ media_gallery.css       |  185 ++++++++++++++++++++++++++++++++++++++++-------
+ media_gallery.info      |    1 +
+ media_gallery.module    |   23 ------
+ media_gallery.theme.inc |    4 +-
+ 6 files changed, 220 insertions(+), 59 deletions(-)
+
+diff --git a/README.txt b/README.txt
+index b19adef..2a4f162 100644
+--- a/README.txt
++++ b/README.txt
+@@ -28,7 +28,10 @@ INSTALLATION
+    c. Chaos tool suite (latest release, tested with 7.x-1.0-beta1)
+       - Download from http://drupal.org/project/ctools and unpack it in your
+         contributed modules directory (usually sites/all/modules).
+-   d. ColorBox jQuery plugin (latest release, tested with 1.3.17)
++   d. ColorBox module (latest release, tested with 7.x-1.2)
++      - Download from http://http://drupal.org/project/colorbox and unpack it in
++        your contributed modules directory (usually sites/all/modules).
++   e. ColorBox jQuery plugin (latest release, tested with 1.3.19)
+       - Download from http://colorpowered.com/colorbox and unpack it in
+         sites/all/libraries (if the directory doesn't exist, create it first).
+ 
+diff --git a/colorbox-display.js b/colorbox-display.js
+index 195ce1f..c3115be 100644
+--- a/colorbox-display.js
++++ b/colorbox-display.js
+@@ -20,19 +20,27 @@ Drupal.behaviors.mediaGalleryColorbox.attach = function (context, settings) {
+         $link.attr('href', href.replace(/\/detail\/([0-9]+)\/([0-9]+)/, '/lightbox/$1/$2'));
+       }
+       $links.not('.meta-wrapper').colorbox({
+-        slideshow: true,
+-        slideshowAuto: false,
+-        slideshowStart: Drupal.t('Slideshow'),
+-        slideshowStop: '[' + Drupal.t('stop slideshow') + ']',
+-        slideshowSpeed: 4000,
+-        current: Drupal.t('Item !current of !total', {'!current':'{current}', '!total':'{total}'}),
++        slideshow: Drupal.settings.colorbox.slideshow,
++        slideshowAuto: Drupal.settings.colorbox.slideshowAuto,
++        slideshowStart: Drupal.settings.colorbox.slideshowStart,
++        slideshowStop: Drupal.settings.colorbox.slideshowStop,
++        slideshowSpeed: Drupal.settings.colorbox.slideshowSpeed,
++        current: Drupal.settings.colorbox.current,
++        next: Drupal.settings.colorbox.next,
++        previous: Drupal.settings.colorbox.previous,
+         innerWidth: 'auto',
++        //maxWidth: Drupal.settings.colorbox.maxWidth,
++        //maxHeight: Drupal.settings.colorbox.maxHeight,
++        speed: Drupal.settings.colorbox.speed,
++        close:settings.colorbox.close,
++        overlayClose:settings.colorbox.overlayClose,
+         // If 'title' evaluates to false, Colorbox will use the title from the
+         // underlying <a> element, which we don't want. Using a space is the
+         // officially approved workaround. See
+         // http://groups.google.com/group/colorbox/msg/7671ae69708950bf
+         title: ' ',
+-        transition: 'fade',
++        transition: Drupal.settings.colorbox.transition,
++        opacity: Drupal.settings.colorbox.opacity,
+         preloading: true,
+         fastIframe: false,
+         onComplete: function () {
+@@ -78,3 +86,42 @@ Drupal.mediaGalleryColorbox.handleMediaYoutubeLoad = function (event, videoSetti
+       // set the slideshow to restart when the video is done playing.
+   }
+ };
++
++
++jQuery(document).ready(function() {
++
++    // Add the ColorBox theme name to <body> as a class name
++    var cboxTheme  = (Drupal.settings.colorbox.__drupal_alter_by_ref).toString();
++    if (cboxTheme.indexOf("example1") != -1) {
++        cboxTheme = 'example1';
++    }
++    else if (cboxTheme.indexOf("example2") != -1) {
++        cboxTheme = 'example2';
++    }
++    else if (cboxTheme.indexOf("example3") != -1) {
++        cboxTheme = 'example3';
++    }
++    else if (cboxTheme.indexOf("example4") != -1) {
++        cboxTheme = 'example4';
++    }
++    else if (cboxTheme.indexOf("example5") != -1) {
++        cboxTheme = 'example5';
++    }
++    else if (cboxTheme.indexOf("default") != -1) {
++        cboxTheme = 'default';
++    }
++    else if (cboxTheme.indexOf("stockholmsyndrome") != -1) {
++        cboxTheme = 'stockholmsyndrome';
++    }
++    else {
++        cboxTheme = 'none';
++    }
++    cboxTheme = 'cbox-' + cboxTheme;
++    jQuery('body').addClass(cboxTheme);
++
++    // Put the title in the correct div container
++    jQuery(document).bind('cbox_complete', function() {
++                var cboxTitle = jQuery(".lightbox-title").html();
++                jQuery("#cboxTitle").html(cboxTitle);
++    });
++});
+diff --git a/media_gallery.css b/media_gallery.css
+index cad3938..1c4b6cf 100644
+--- a/media_gallery.css
++++ b/media_gallery.css
+@@ -513,56 +513,189 @@ a.media-gallery-thumb img,
+ 
+ /* @group Lightbox styles */
+ 
+-#cboxSlideshow {
+-  right: 40px;
++.cbox-example1 .lightbox-title,
++.cbox-example2 .lightbox-title,
++.cbox-example3 .lightbox-title,
++.cbox-example4 .lightbox-title,
++.cbox-example5 .lightbox-title,
++.cbox-default .lightbox-title,
++.cbox-stockholmsyndrome .lightbox-title {
++    display: none;
+ }
+ 
+-.mg-lightbox-wrapper {
+-  color: #666666;
++.cbox-example1 #cboxContent, .cbox-example1 #cboxLoadedContent, .cbox-example1 #colorbox,
++.cbox-example4 #cboxContent, .cbox-example4 #cboxLoadedContent, .cbox-example4 #colorbox,
++.cbox-default #cboxContent, .cbox-default #cboxLoadedContent, .cbox-default #colorbox {
++    overflow: hidden !important;
+ }
+ 
+-.mg-lightbox-wrapper a,
+-.lightbox-stack a {
++/* .cbox-example1*/
++.cbox-example1 #cboxSlideshow {
++  right: 40px;
++}
++.cbox-example1 .mg-lightbox-wrapper {
++  color: #666666;
++}
++.cbox-example1 .mg-lightbox-wrapper a,
++.cbox-example1 .lightbox-stack a {
+   color: #0074BD;
+ }
+-
+-.mg-lightbox-wrapper a:link,
+-.mg-lightbox-wrapper a:visited,
+-.mg-lightbox-wrapper a:active,
+-.mg-lightbox-wrapper a:hover,
+-.lightbox-stack a:link,
+-.lightbox-stack a:visited,
+-.lightbox-stack a:active,
+-.lightbox-stack a:hover{
++.cbox-example1 .mg-lightbox-wrapper a:link,
++.cbox-example1 .mg-lightbox-wrapper a:visited,
++.cbox-example1 .mg-lightbox-wrapper a:active,
++.cbox-example1 .mg-lightbox-wrapper a:hover,
++.cbox-example1 .lightbox-stack a:link,
++.cbox-example1 .lightbox-stack a:visited,
++.cbox-example1 .lightbox-stack a:active,
++.cbox-example1 .lightbox-stack a:hover{
+   color: #0074BD;
+ }
+-
+-.mg-lightbox-wrapper a:hover,
+-.lightbox-stack a:hover {
++.cbox-example1 .mg-lightbox-wrapper a:hover,
++.cbox-example1 .lightbox-stack a:hover {
+   text-decoration: underline;
+ }
+-
+-.mg-lightbox-wrapper .lightbox-title {
++.cbox-example1 .mg-lightbox-wrapper .lightbox-title {
+   font-size: 1.8em;
+   font-weight: bold;
+   padding-bottom: 0.2em;
+   padding-top: 0.2em;
+ }
+-
+-.mg-lightbox-detail {
++.cbox-example1 .mg-lightbox-detail {
+   float: left;
+   padding-right: 320px;
+ }
+-
+-.mg-lightbox-description {
++.cbox-example1 .mg-lightbox-description {
+   width: 300px;
+   margin-left: -300px;
+   float: left;
+ }
+-
+-.lightbox-stack {
++.cbox-example1 .lightbox-stack {
+   min-width: 250px;
+ }
++.cbox-example1 #cboxContent,
++.cbox-example1 #cboxLoadedContent,
++.cbox-example1 #colorbox {
++    overflow: hidden !important;
++}
++.cbox-example1 .mg-lightbox-description .field-item {
++  overflow: auto !important;
++}
++
++/* .cbox-example2 & .cbox-example3 */
++.cbox-example2 #colorbox .lightbox-wdesc .mg-lightbox-description,
++.cbox-example3 #colorbox .lightbox-wdesc .mg-lightbox-description {
++    bottom: 0;
++    color: #888;
++    height: 100px;
++    margin: 8px;
++    overflow: auto;
++    position: absolute;
++}
++.cbox-example2 #colorbox .mg-lightbox-wrapper,
++.cbox-example3 #colorbox .mg-lightbox-wrapper {
++    overflow: hidden;
++}
++.cbox-example2 #colorbox .mg-lightbox-wrapper.lightbox-wdesc,
++.cbox-example3 #colorbox .mg-lightbox-wrapper.lightbox-wdesc {
++    padding-bottom: 108px;
++}
++.cbox-example2 #colorbox .media-gallery-detail-info,
++.cbox-example3 #colorbox .media-gallery-detail-info {
++    margin: 0;
++    padding: 0;
++}
++.cbox-example2 #colorbox .media-gallery-detail-info a,
++.cbox-example3 #colorbox .media-gallery-detail-info a {
++    margin-left: 8px;
++}
++.cbox-example2 #colorbox .media-gallery-detail-info .media-license,
++.cbox-example3 #colorbox .media-gallery-detail-info .media-license {
++    margin-right: 8px;
++}
++.cbox-example2 #colorbox a, .cbox-example2 #colorbox a:link, .cbox-example2 #colorbox a:visited,
++.cbox-example3 #colorbox a, .cbox-example3 #colorbox a:link, .cbox-example3 #colorbox a:visited {
++    color: #fff;
++    text-decoration: none;
++}
++.cbox-example2 #colorbox a:hover,
++.cbox-example3 #colorbox a:hover {
++    color: #fff;
++    text-decoration: underline;
++}
++
++.cbox-example3 #cboxLoadedContent {
++    background: #000 !important;
++}
++
++/* .cbox-example4 & .cbox-example5 & .cbox-default & .cbox-stockholmsyndrome */
++.cbox-example4 #colorbox .lightbox-wdesc .mg-lightbox-description,
++.cbox-example5 #colorbox .lightbox-wdesc .mg-lightbox-description,
++.cbox-default #colorbox .lightbox-wdesc .mg-lightbox-description,
++.cbox-stockholmsyndrome #colorbox .lightbox-wdesc .mg-lightbox-description {
++    bottom: 30px;
++    color: #444;
++    height: 100px;
++    overflow: auto;
++    position: absolute;
++}
++.cbox-example5 #colorbox .lightbox-wdesc .mg-lightbox-description {
++    bottom: 16px;
++}
++.cbox-default #colorbox .lightbox-wdesc .mg-lightbox-description {
++    bottom: 52px;
++    height: 92px;
++}
++.cbox-stockholmsyndrome #colorbox .lightbox-wdesc .mg-lightbox-description {
++    bottom: 0;
++    margin: 8px;
++}
++.cbox-example4 #colorbox .mg-lightbox-wrapper,
++.cbox-example5 #colorbox .mg-lightbox-wrapper,
++.cbox-default #colorbox .mg-lightbox-wrapper,
++.cbox-stockholmsyndrome #colorbox .mg-lightbox-wrapper {
++    overflow: hidden;
++}
++.cbox-example4 #colorbox .mg-lightbox-wrapper.lightbox-wdesc,
++.cbox-example5 #colorbox .mg-lightbox-wrapper.lightbox-wdesc,
++.cbox-default #colorbox .mg-lightbox-wrapper.lightbox-wdesc {
++    padding-bottom: 108px;
++}
++.cbox-stockholmsyndrome #colorbox .mg-lightbox-wrapper.lightbox-wdesc {
++    padding-bottom: 100px;
++}
++.cbox-example4 #colorbox .media-gallery-detail-info,
++.cbox-example5 #colorbox .media-gallery-detail-info,
++.cbox-default #colorbox .media-gallery-detail-info,
++.cbox-stockholmsyndrome #colorbox .media-gallery-detail-info {
++    margin: 0;
++    padding: 0;
++}
++.cbox-example4 #colorbox a, .cbox-example4 #colorbox a:link, .cbox-example4 #colorbox a:visited,
++.cbox-example5 #colorbox a, .cbox-example5 #colorbox a:link, .cbox-example5 #colorbox a:visited,
++.cbox-default #colorbox a, .cbox-default #colorbox a:link, .cbox-default #colorbox a:visited,
++.cbox-stockholmsyndrome #colorbox a, .cbox-stockholmsyndrome #colorbox a:link, .cbox-stockholmsyndrome #colorbox a:visited {
++    color: #36f;
++    text-decoration: none;
++}
++.cbox-example4 #colorbox a:hover,
++.cbox-example5 #colorbox a:hover,
++.cbox-default #colorbox a:hover,
++.cbox-stockholmsyndrome #colorbox a:hover {
++    color: #36f;
++    text-decoration: underline;
++}
++.cbox-stockholmsyndrome #colorbox .media-gallery-detail-info a {
++    margin-left: 8px;
++}
++.cbox-stockholmsyndrome #colorbox .media-gallery-detail-info .media-license {
++    margin-right: 8px;
++}
++.cbox-stockholmsyndrome #cboxSlideshow {
++    bottom: -26px;
++    position: absolute;
++    text-align: center;
++    width: 100%;
++}
+ 
+ /* @end */
+ 
+diff --git a/media_gallery.info b/media_gallery.info
+index 92241ae..57676bf 100644
+--- a/media_gallery.info
++++ b/media_gallery.info
+@@ -3,6 +3,7 @@ description = A flexible gallery of media.
+ core = 7.x
+ package = Media
+ 
++dependencies[] = colorbox
+ dependencies[] = list
+ dependencies[] = number
+ dependencies[] = media (<1.99)
+diff --git a/media_gallery.module b/media_gallery.module
+index 70f3932..e263bac 100644
+--- a/media_gallery.module
++++ b/media_gallery.module
+@@ -670,29 +670,6 @@ function media_gallery_block_save($delta = '', $edit = array()) {
+ }
+ 
+ /**
+- * Implements hook_library().
+- */
+-function media_gallery_library() {
+-  $library_path = variable_get('media_gallery_library_path', 'sites/all/libraries');
+-  $stylesheet = variable_get('media_gallery_colorbox_stylesheet', 'example1');
+-  $libraries['colorbox'] = array(
+-    'title' => 'Colorbox',
+-    'website' => 'http://colorpowered.com/colorbox/',
+-    'version' => '1.3.9',
+-    'js' => array(
+-      $library_path . '/colorbox/colorbox/jquery.colorbox-min.js' => array(),
+-    ),
+-    'css' => array(
+-      $library_path . '/colorbox/' . $stylesheet . '/colorbox.css' => array(
+-        'type' => 'file',
+-        'media' => 'screen',
+-      ),
+-    ),
+-  );
+-  return $libraries;
+-}
+-
+-/**
+  * Helper function to sort media gallery items by an ordered list of file IDs.
+  *
+  * Call once with $set_fid_order set to an array of file orders, keyed by the
+diff --git a/media_gallery.theme.inc b/media_gallery.theme.inc
+index 7fd7942..9909dcb 100644
+--- a/media_gallery.theme.inc
++++ b/media_gallery.theme.inc
+@@ -218,7 +218,7 @@ function theme_media_gallery_media_item_lightbox($variables) {
+     // but we haven't found one yet.
+     $download_link = '&nbsp;';
+   }
+-
++  $media_desc_class = !empty($gallery_node->media_gallery_lightbox_extras[LANGUAGE_NONE][0]['value']) ? 'lightbox-wdesc' : '';
+   $media_gallery_detail =
+       '<div class="lightbox-stack">' .
+       theme('media_gallery_item', $link_vars) .
+@@ -233,7 +233,7 @@ function theme_media_gallery_media_item_lightbox($variables) {
+   // If the format is to have the description as well, we add it here
+   if (!empty($gallery_node->media_gallery_lightbox_extras[LANGUAGE_NONE][0]['value'])) {
+     $output =
+-    '<div class="mg-lightbox-wrapper clearfix">' .
++    '<div class="mg-lightbox-wrapper clearfix ' . $media_desc_class . '">' .
+       '<div class="lightbox-title">' . drupal_render($element['media_title']) . '</div>' .
+       '<div class="mg-lightbox-detail">' .
+       $media_gallery_detail .
+-- 
+1.7.5.4
+
